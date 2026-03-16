@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twiiter-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twiiter
+  template:
+    metadata:
+      labels:
+        app: twiiter
+    spec:
+      containers:
+      - name: twiiter-container
+        image: twiiterclone:local # Вкажи назву свого образу
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080 # Порт твоєї програми
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twiiter-service
+spec:
+  selector:
+    app: twiiter
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort
