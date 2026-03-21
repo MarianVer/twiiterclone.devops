@@ -21,9 +21,8 @@ spec:
         - name: POSTGRES_USER
           value: "django_user"
         - name: POSTGRES_PASSWORD
-          value: "mypassword123" # Встанови будь-який пароль тут
+          value: "postgres" # Спробуй спочатку "postgres", якщо не вийде - "password"
 ---
-# 2. Сервіс бази (без змін)
 apiVersion: v1
 kind: Service
 metadata:
@@ -35,7 +34,7 @@ spec:
     - port: 5432
       targetPort: 5432
 ---
-# 3. Твій додаток
+# 3. Твоя аплікація
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,13 +54,27 @@ spec:
         image: twiiterclone:local
         imagePullPolicy: Never
         env:
-        - name: DB_NAME
+        - name: DATABASE_URL # Багато Django-проєктів використовують цей формат
+          value: "postgres://django_user:postgres@db:5432/postgres"
+        - name: POSTGRES_PASSWORD # Або окремі змінні
           value: "postgres"
-        - name: DB_USER
+        - name: POSTGRES_USER
           value: "django_user"
-        - name: DB_PASS
-          value: "mypassword123" # МАЄ БУТИ ТАКИМ ЖЕ, ЯК ВИЩЕ
-        - name: DB_HOST
-          value: "db"
+        - name: POSTGRES_DB
+          value: "postgres"
         ports:
         - containerPort: 8000
+---
+# 4. Сервіс (targetPort МАЄ бути 8000)
+apiVersion: v1
+kind: Service
+metadata:
+  name: twiiter-service
+spec:
+  selector:
+    app: twiiter
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: NodePort
