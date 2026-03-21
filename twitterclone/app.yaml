@@ -1,4 +1,4 @@
-# 1. База даних
+# 1. База даних (PostgreSQL)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,12 +17,13 @@ spec:
         image: postgres:15
         env:
         - name: POSTGRES_DB
-          value: "postgres"
+          value: "twitterclone"      # Згідно з settings.py
         - name: POSTGRES_USER
-          value: "django_user"
+          value: "django_user"       # Згідно з settings.py
         - name: POSTGRES_PASSWORD
-          value: "postgres" # Спробуй спочатку "postgres", якщо не вийде - "password"
+          value: "yourpassword"      # Згідно з settings.py
 ---
+# 2. Сервіс для бази
 apiVersion: v1
 kind: Service
 metadata:
@@ -34,7 +35,7 @@ spec:
     - port: 5432
       targetPort: 5432
 ---
-# 3. Твоя аплікація
+# 3. Твоя Django-аплікація
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -53,19 +54,10 @@ spec:
       - name: twiiter-container
         image: twiiterclone:local
         imagePullPolicy: Never
-        env:
-        - name: DATABASE_URL # Багато Django-проєктів використовують цей формат
-          value: "postgres://django_user:postgres@db:5432/postgres"
-        - name: POSTGRES_PASSWORD # Або окремі змінні
-          value: "postgres"
-        - name: POSTGRES_USER
-          value: "django_user"
-        - name: POSTGRES_DB
-          value: "postgres"
         ports:
-        - containerPort: 8000
+        - containerPort: 8000        # Django зазвичай на 8000
 ---
-# 4. Сервіс (targetPort МАЄ бути 8000)
+# 4. Сервіс для аплікації
 apiVersion: v1
 kind: Service
 metadata:
@@ -76,5 +68,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8000
+      targetPort: 8000              # Перенаправляємо на 8000
   type: NodePort
